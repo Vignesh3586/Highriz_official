@@ -136,18 +136,15 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
 
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-        const response = await fetch("https://highriz-officialbackend.vercel.app/send-data", {
+        const response = await fetch("http://localhost:5000/send-data", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData),
           });
         
           const result = await response.json();
-          console.log(result);
-
-        clearTimeout(timeout); // Clear timeout if response is received
+          console.log(result); 
 
         if (!response.ok) throw new Error("Submission failed.");
 

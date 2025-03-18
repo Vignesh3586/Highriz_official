@@ -137,7 +137,7 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
     try {
         const controller = new AbortController();
 
-        const response = await fetch("http://localhost:5000/send-data", {
+        const response = await fetch("https://highriz-official-backend.onrender.com/send-data", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData),

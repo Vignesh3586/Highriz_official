@@ -3,6 +3,7 @@ const { google } = require("googleapis");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
+const fs=require('fs');
 const base64Credentials = fs.readFileSync("credentials_base64.txt", "utf8");
 
 const credentials = JSON.parse(Buffer.from(base64Credentials, "base64").toString("utf8"));

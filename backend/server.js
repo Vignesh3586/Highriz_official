@@ -25,13 +25,14 @@ const transporter = nodemailer.createTransport({
 
 
   // Send email function
-const sendMail = async (name,email,phone) => {
+const sendMail = async (firstname,lastname,email) => {
+    const name=`${firstname} ${lastname}`
     try {
       const info = await transporter.sendMail({
         from: `${name} ${process.env.EMAIL_USER}`, 
         to:process.env.EMAIL_USER, 
         subject:`Message from ${name} in HighRiz`, 
-        text:`Name: ${name}\nEmail: ${email} \nPhone:${phone} \n\nMessage:New client registered`,
+        text:`Name: ${name}\nEmail: ${email}\n\nMessage:New client registered`,
         replyTo:email
       });
   
@@ -53,7 +54,7 @@ const spreadsheetId = process.env.SPREADSHEET_ID; // Replace with your Google Sh
 
 app.post("/send-data", async (req, res) => {
   try {
-    const { name, email,phone,service, message } = req.body;
+    const {firstname,lastname,email,subject,message} = req.body;
     const client = await auth.getClient();
     const sheets = google.sheets({ version: "v4", auth: client });
 
@@ -62,11 +63,11 @@ app.post("/send-data", async (req, res) => {
       range: "Sheet1!A1:C1",
       valueInputOption: "RAW",
       requestBody: {
-        values: [[name,email,phone,service, message]],
+        values: [[firstname,lastname,email,subject,message]],
       },
     });
     if(response){
-        await sendMail(name,email,phone)
+        await sendMail(firstname,lastname,email)
     }
      
     

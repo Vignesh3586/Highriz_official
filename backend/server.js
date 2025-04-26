@@ -3,36 +3,39 @@ const { google } = require("googleapis");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
-const fs=require('fs');
-const base64Credentials = fs.readFileSync("credentials_base64.txt", "utf8");
-
-const credentials = JSON.parse(Buffer.from(base64Credentials, "base64").toString("utf8"));
+const fs = require("fs");
+const multer = require("multer");
 require("dotenv").config();
 
-
+// Read and decode credentials
+const base64Credentials = fs.readFileSync("credentials_base64.txt", "utf8");
+const credentials = JSON.parse(Buffer.from(base64Credentials, "base64").toString("utf8"));
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const upload = multer({ dest: "uploads/" });
+
+
+// Configure nodemailer
 const transporter = nodemailer.createTransport({
-    service: "gmail", 
-    auth: {
-      user: process.env.EMAIL_USER, 
-      pass: process.env.EMAIL_PASS, 
-    },
-  });
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 
   // Send email function
-const sendMail = async (firstname,lastname,email) => {
-    const name=`${firstname} ${lastname}`
+const sendMail = async (name,email,phone) => {
     try {
       const info = await transporter.sendMail({
         from: `${name} ${process.env.EMAIL_USER}`, 
         to:process.env.EMAIL_USER, 
         subject:`Message from ${name} in HighRiz`, 
-        text:`Name: ${name}\nEmail: ${email}\n\nMessage:New client registered`,
+        text:`Name: ${name}\nEmail: ${email} \nPhone:${phone} \n\nMessage:New client registered`,
         replyTo:email
       });
   
@@ -44,30 +47,31 @@ const sendMail = async (firstname,lastname,email) => {
     }
   };
 
-// Load Google Sheets API credentials
+// Google Sheets API setup
 const auth = new google.auth.GoogleAuth({
   credentials,
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
-const spreadsheetId = process.env.SPREADSHEET_ID; // Replace with your Google Sheet ID
+const spreadsheetId = process.env.SPREADSHEET_ID; // <-- Only one spreadsheet ID
 
-app.post("/send-data", async (req, res) => {
+// Route for contact form
+app.post("/contact-form", async (req, res) => {
   try {
-    const {firstname,lastname,email,subject,message} = req.body;
+    const { name, email,phone,service, message } = req.body;
     const client = await auth.getClient();
     const sheets = google.sheets({ version: "v4", auth: client });
 
-   const response=await sheets.spreadsheets.values.append({
+    const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "Sheet1!A1:C1",
+      range: "ContactSheet!A1", // <-- Write to 'ContactSheet'
       valueInputOption: "RAW",
       requestBody: {
         values: [[firstname,lastname,email,subject,message]],
       },
     });
     if(response){
-        await sendMail(firstname,lastname,email)
+        await sendMail(name,email,phone)
     }
      
     

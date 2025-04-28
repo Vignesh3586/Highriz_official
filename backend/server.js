@@ -52,7 +52,7 @@ const storage = multer.diskStorage({
 
 // Configure multer with file filtering
 const fileFilter = (req, file, cb) => {
-      const allowedTypes = [
+  const allowedTypes = [
     'image/jpeg',
     'image/png',
     'application/pdf',
@@ -149,7 +149,7 @@ app.post("/contact-form", express.json(), async (req, res) => {
       });
     }
 
-    const { firstname, lastname, email, service, subject, message, phone } = req.body;
+    const { firstname, lastname, email, service, message, phone } = req.body;
 
     const client = await auth.getClient();
     const sheets = google.sheets({ version: "v4", auth: client });
@@ -159,7 +159,7 @@ app.post("/contact-form", express.json(), async (req, res) => {
       range: "ContactSheet!A1",
       valueInputOption: "RAW",
       requestBody: {
-        values: [[firstname, lastname, phone, email, service, subject, message]],
+        values: [[firstname, lastname, phone, email, service,message]],
       },
     });
 
